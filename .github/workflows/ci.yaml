@@ -103,7 +103,7 @@ jobs:
         run: nix develop --impure .#ci
 
       - name: Start kind cluster
-        run: kind create cluster --config test/kind.yaml --image kindest/node:${{ matrix.k8s_version }} --wait 1m
+        run: kind create cluster --image kindest/node:${{ matrix.k8s_version }} --wait 1m
 
       - name: Acceptance test
         run: nix develop --impure .#ci -c make test-e2e
