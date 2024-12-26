@@ -1,0 +1,10 @@
+---
+apiVersion: autoscaling.phihos.github.io/v1alpha1
+kind: CranePodAutoscaler
+metadata:
+  labels:
+    app.kubernetes.io/name: tmp
+    app.kubernetes.io/managed-by: kustomize
+  name: cranepodautoscaler-sample
+spec:
+# TODO(user): Add fields here
