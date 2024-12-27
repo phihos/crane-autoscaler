@@ -25,12 +25,12 @@ jobs:
       - name: Set up Nix
         uses: DeterminateSystems/nix-installer-action@v16
         with:
-          determinate: false
+          determinate: true
 
       - name: Set up magic Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
         with:
-          use-flakehub: false
+          use-flakehub: true
           diff-store: true
 
       - name: Set up Go cache
@@ -60,12 +60,12 @@ jobs:
       - name: Set up Nix
         uses: DeterminateSystems/nix-installer-action@v16
         with:
-          determinate: false
+          determinate: true
 
       - name: Set up magic Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
         with:
-          use-flakehub: false
+          use-flakehub: true
           diff-store: true
 
       - name: Set up Go cache
@@ -98,12 +98,12 @@ jobs:
       - name: Set up Nix
         uses: DeterminateSystems/nix-installer-action@v16
         with:
-          determinate: false
+          determinate: true
 
       - name: Set up magic Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
         with:
-          use-flakehub: false
+          use-flakehub: true
           diff-store: true
 
       - name: Prepare Nix shell
