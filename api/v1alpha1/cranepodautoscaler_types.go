@@ -17,19 +17,15 @@ limitations under the License.
 package v1alpha1
 
 import (
+	hpav1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // CranePodAutoscalerSpec defines the desired state of CranePodAutoscaler
 type CranePodAutoscalerSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of CranePodAutoscaler. Edit cranepodautoscaler_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	HPA hpav1.HorizontalPodAutoscalerSpec `json:"hpa"`
+	VPA vpav1.VerticalPodAutoscalerSpec   `json:"vpa"`
 }
 
 // CranePodAutoscalerStatus defines the observed state of CranePodAutoscaler
