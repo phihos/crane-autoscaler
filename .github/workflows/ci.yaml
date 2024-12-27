@@ -93,7 +93,8 @@ jobs:
       - name: Set up magic Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
         with:
-          determinate: false
+          use_flakehub: false
+          diff_store: true
 
       - name: Prepare Nix shell
         run: nix develop --impure .#ci
