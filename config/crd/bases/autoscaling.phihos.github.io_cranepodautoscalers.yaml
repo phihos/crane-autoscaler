@@ -17,8 +17,7 @@ spec:
     - name: v1alpha1
       schema:
         openAPIV3Schema:
-          description: CranePodAutoscaler is the Schema for the cranepodautoscalers
-            API
+          description: CranePodAutoscaler is the Schema for the cranepodautoscalers API
           properties:
             apiVersion:
               description: |-
@@ -41,8 +40,7 @@ spec:
               description: CranePodAutoscalerSpec defines the desired state of CranePodAutoscaler
               properties:
                 hpa:
-                  description: HorizontalPodAutoscalerSpec describes the desired functionality
-                    of the HorizontalPodAutoscaler.
+                  description: HorizontalPodAutoscalerSpec describes the desired functionality of the HorizontalPodAutoscaler.
                   properties:
                     behavior:
                       description: |-
@@ -62,8 +60,7 @@ spec:
                                 policies is a list of potential scaling polices which can be used during scaling.
                                 At least one policy must be specified, otherwise the HPAScalingRules will be discarded as invalid
                               items:
-                                description: HPAScalingPolicy is a single policy which
-                                  must hold true for a specified past interval.
+                                description: HPAScalingPolicy is a single policy which must hold true for a specified past interval.
                                 properties:
                                   periodSeconds:
                                     description: |-
@@ -72,8 +69,7 @@ spec:
                                     format: int32
                                     type: integer
                                   type:
-                                    description: type is used to specify the scaling
-                                      policy.
+                                    description: type is used to specify the scaling policy.
                                     type: string
                                   value:
                                     description: |-
@@ -117,8 +113,7 @@ spec:
                                 policies is a list of potential scaling polices which can be used during scaling.
                                 At least one policy must be specified, otherwise the HPAScalingRules will be discarded as invalid
                               items:
-                                description: HPAScalingPolicy is a single policy which
-                                  must hold true for a specified past interval.
+                                description: HPAScalingPolicy is a single policy which must hold true for a specified past interval.
                                 properties:
                                   periodSeconds:
                                     description: |-
@@ -127,8 +122,7 @@ spec:
                                     format: int32
                                     type: integer
                                   type:
-                                    description: type is used to specify the scaling
-                                      policy.
+                                    description: type is used to specify the scaling policy.
                                     type: string
                                   value:
                                     description: |-
@@ -191,15 +185,13 @@ spec:
                               This is an alpha feature and can be enabled by the HPAContainerMetrics feature flag.
                             properties:
                               container:
-                                description: container is the name of the container
-                                  in the pods of the scaling target
+                                description: container is the name of the container in the pods of the scaling target
                                 type: string
                               name:
                                 description: name is the name of the resource in question.
                                 type: string
                               target:
-                                description: target specifies the target value for the
-                                  given metric
+                                description: target specifies the target value for the given metric
                                 properties:
                                   averageUtilization:
                                     description: |-
@@ -219,15 +211,13 @@ spec:
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                   type:
-                                    description: type represents whether the metric
-                                      type is Utilization, Value, or AverageValue
+                                    description: type represents whether the metric type is Utilization, Value, or AverageValue
                                     type: string
                                   value:
                                     anyOf:
                                       - type: integer
                                       - type: string
-                                    description: value is the target value of the metric
-                                      (as a quantity).
+                                    description: value is the target value of the metric (as a quantity).
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                 required:
@@ -247,8 +237,7 @@ spec:
                               QPS from loadbalancer running outside of cluster).
                             properties:
                               metric:
-                                description: metric identifies the target metric by
-                                  name and selector
+                                description: metric identifies the target metric by name and selector
                                 properties:
                                   name:
                                     description: name is the name of the given metric
@@ -260,17 +249,14 @@ spec:
                                       When unset, just the metricName will be used to gather metrics.
                                     properties:
                                       matchExpressions:
-                                        description: matchExpressions is a list of label
-                                          selector requirements. The requirements are
-                                          ANDed.
+                                        description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
                                         items:
                                           description: |-
                                             A label selector requirement is a selector that contains values, a key, and an operator that
                                             relates the key and values.
                                           properties:
                                             key:
-                                              description: key is the label key that
-                                                the selector applies to.
+                                              description: key is the label key that the selector applies to.
                                               type: string
                                             operator:
                                               description: |-
@@ -307,8 +293,7 @@ spec:
                                   - name
                                 type: object
                               target:
-                                description: target specifies the target value for the
-                                  given metric
+                                description: target specifies the target value for the given metric
                                 properties:
                                   averageUtilization:
                                     description: |-
@@ -328,15 +313,13 @@ spec:
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                   type:
-                                    description: type represents whether the metric
-                                      type is Utilization, Value, or AverageValue
+                                    description: type represents whether the metric type is Utilization, Value, or AverageValue
                                     type: string
                                   value:
                                     anyOf:
                                       - type: integer
                                       - type: string
-                                    description: value is the target value of the metric
-                                      (as a quantity).
+                                    description: value is the target value of the metric (as a quantity).
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                 required:
@@ -352,28 +335,23 @@ spec:
                               (for example, hits-per-second on an Ingress object).
                             properties:
                               describedObject:
-                                description: describedObject specifies the descriptions
-                                  of a object,such as kind,name apiVersion
+                                description: describedObject specifies the descriptions of a object,such as kind,name apiVersion
                                 properties:
                                   apiVersion:
-                                    description: apiVersion is the API version of the
-                                      referent
+                                    description: apiVersion is the API version of the referent
                                     type: string
                                   kind:
-                                    description: 'kind is the kind of the referent;
-                                    More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                                    description: 'kind is the kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                                     type: string
                                   name:
-                                    description: 'name is the name of the referent;
-                                    More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                                    description: 'name is the name of the referent; More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                                     type: string
                                 required:
                                   - kind
                                   - name
                                 type: object
                               metric:
-                                description: metric identifies the target metric by
-                                  name and selector
+                                description: metric identifies the target metric by name and selector
                                 properties:
                                   name:
                                     description: name is the name of the given metric
@@ -385,17 +363,14 @@ spec:
                                       When unset, just the metricName will be used to gather metrics.
                                     properties:
                                       matchExpressions:
-                                        description: matchExpressions is a list of label
-                                          selector requirements. The requirements are
-                                          ANDed.
+                                        description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
                                         items:
                                           description: |-
                                             A label selector requirement is a selector that contains values, a key, and an operator that
                                             relates the key and values.
                                           properties:
                                             key:
-                                              description: key is the label key that
-                                                the selector applies to.
+                                              description: key is the label key that the selector applies to.
                                               type: string
                                             operator:
                                               description: |-
@@ -432,8 +407,7 @@ spec:
                                   - name
                                 type: object
                               target:
-                                description: target specifies the target value for the
-                                  given metric
+                                description: target specifies the target value for the given metric
                                 properties:
                                   averageUtilization:
                                     description: |-
@@ -453,15 +427,13 @@ spec:
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                   type:
-                                    description: type represents whether the metric
-                                      type is Utilization, Value, or AverageValue
+                                    description: type represents whether the metric type is Utilization, Value, or AverageValue
                                     type: string
                                   value:
                                     anyOf:
                                       - type: integer
                                       - type: string
-                                    description: value is the target value of the metric
-                                      (as a quantity).
+                                    description: value is the target value of the metric (as a quantity).
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                 required:
@@ -479,8 +451,7 @@ spec:
                               averaged together before being compared to the target value.
                             properties:
                               metric:
-                                description: metric identifies the target metric by
-                                  name and selector
+                                description: metric identifies the target metric by name and selector
                                 properties:
                                   name:
                                     description: name is the name of the given metric
@@ -492,17 +463,14 @@ spec:
                                       When unset, just the metricName will be used to gather metrics.
                                     properties:
                                       matchExpressions:
-                                        description: matchExpressions is a list of label
-                                          selector requirements. The requirements are
-                                          ANDed.
+                                        description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
                                         items:
                                           description: |-
                                             A label selector requirement is a selector that contains values, a key, and an operator that
                                             relates the key and values.
                                           properties:
                                             key:
-                                              description: key is the label key that
-                                                the selector applies to.
+                                              description: key is the label key that the selector applies to.
                                               type: string
                                             operator:
                                               description: |-
@@ -539,8 +507,7 @@ spec:
                                   - name
                                 type: object
                               target:
-                                description: target specifies the target value for the
-                                  given metric
+                                description: target specifies the target value for the given metric
                                 properties:
                                   averageUtilization:
                                     description: |-
@@ -560,15 +527,13 @@ spec:
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                   type:
-                                    description: type represents whether the metric
-                                      type is Utilization, Value, or AverageValue
+                                    description: type represents whether the metric type is Utilization, Value, or AverageValue
                                     type: string
                                   value:
                                     anyOf:
                                       - type: integer
                                       - type: string
-                                    description: value is the target value of the metric
-                                      (as a quantity).
+                                    description: value is the target value of the metric (as a quantity).
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                 required:
@@ -590,8 +555,7 @@ spec:
                                 description: name is the name of the resource in question.
                                 type: string
                               target:
-                                description: target specifies the target value for the
-                                  given metric
+                                description: target specifies the target value for the given metric
                                 properties:
                                   averageUtilization:
                                     description: |-
@@ -611,15 +575,13 @@ spec:
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                   type:
-                                    description: type represents whether the metric
-                                      type is Utilization, Value, or AverageValue
+                                    description: type represents whether the metric type is Utilization, Value, or AverageValue
                                     type: string
                                   value:
                                     anyOf:
                                       - type: integer
                                       - type: string
-                                    description: value is the target value of the metric
-                                      (as a quantity).
+                                    description: value is the target value of the metric (as a quantity).
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                 required:
@@ -659,12 +621,10 @@ spec:
                           description: apiVersion is the API version of the referent
                           type: string
                         kind:
-                          description: 'kind is the kind of the referent; More info:
-                          https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          description: 'kind is the kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                           type: string
                         name:
-                          description: 'name is the name of the referent; More info:
-                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          description: 'name is the name of the referent; More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                           type: string
                       required:
                         - kind
@@ -675,8 +635,7 @@ spec:
                     - scaleTargetRef
                   type: object
                 vpa:
-                  description: VerticalPodAutoscalerSpec is the specification of the
-                    behavior of the autoscaler.
+                  description: VerticalPodAutoscalerSpec is the specification of the behavior of the autoscaler.
                   properties:
                     recommenders:
                       description: |-
@@ -689,8 +648,7 @@ spec:
                           In the future it might pass parameters to the recommender.
                         properties:
                           name:
-                            description: Name of the recommender responsible for generating
-                              recommendation for this object.
+                            description: Name of the recommender responsible for generating recommendation for this object.
                             type: string
                         required:
                           - name
@@ -725,8 +683,7 @@ spec:
                                   (and possibly applied) by VPA.
                                   If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
                                 items:
-                                  description: ResourceName is the name identifying
-                                    various resources in a ResourceList.
+                                  description: ResourceName is the name identifying various resources in a ResourceList.
                                   type: string
                                 type: array
                               controlledValues:
@@ -760,8 +717,7 @@ spec:
                                   for the container. The default is no minimum.
                                 type: object
                               mode:
-                                description: Whether autoscaler is enabled for the container.
-                                  The default is "Auto".
+                                description: Whether autoscaler is enabled for the container. The default is "Auto".
                                 enum:
                                   - Auto
                                   - "Off"
@@ -787,12 +743,10 @@ spec:
                           description: apiVersion is the API version of the referent
                           type: string
                         kind:
-                          description: 'kind is the kind of the referent; More info:
-                          https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          description: 'kind is the kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                           type: string
                         name:
-                          description: 'name is the name of the referent; More info:
-                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          description: 'name is the name of the referent; More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                           type: string
                       required:
                         - kind
@@ -816,10 +770,7 @@ spec:
                               order to evict a Pod
                             properties:
                               changeRequirement:
-                                description: EvictionChangeRequirement refers to the
-                                  relationship between the new target recommendation
-                                  for a Pod and its current requests, what kind of change
-                                  is necessary for the Pod to be evicted
+                                description: EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
                                 enum:
                                   - TargetHigherThanRequests
                                   - TargetLowerThanRequests
@@ -830,8 +781,7 @@ spec:
                                   to. If more than one resource is given, the EvictionRequirement is fulfilled
                                   if at least one resource meets `changeRequirement`.
                                 items:
-                                  description: ResourceName is the name identifying
-                                    various resources in a ResourceList.
+                                  description: ResourceName is the name identifying various resources in a ResourceList.
                                   type: string
                                 type: array
                             required:

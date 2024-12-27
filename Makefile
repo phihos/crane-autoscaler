@@ -99,7 +99,8 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./api/..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="{./api/...,./cmd/...,./internal/...}" output:crd:artifacts:config=config/crd/bases
+	$(YAMLFMT) -dstar 'config/**/*.{yaml,yml}'
 
 .PHONY: generate
 generate: ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -224,6 +225,7 @@ KUSTOMIZE ?= kustomize
 CONTROLLER_GEN ?= controller-gen
 ENVTEST ?= setup-envtest
 GOLANGCI_LINT = golangci-lint
+YAMLFMT = yamlfmt
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.2
