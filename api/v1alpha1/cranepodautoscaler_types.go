@@ -17,14 +17,14 @@ limitations under the License.
 package v1alpha1
 
 import (
-	hpav1 "k8s.io/api/autoscaling/v1"
+	hpav2 "k8s.io/api/autoscaling/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 // CranePodAutoscalerSpec defines the desired state of CranePodAutoscaler
 type CranePodAutoscalerSpec struct {
-	HPA hpav1.HorizontalPodAutoscalerSpec `json:"hpa"`
+	HPA hpav2.HorizontalPodAutoscalerSpec `json:"hpa"`
 	VPA vpav1.VerticalPodAutoscalerSpec   `json:"vpa"`
 }
 

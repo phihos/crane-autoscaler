@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -30,7 +31,7 @@ import (
 
 	autoscalingv1alpha1 "github.com/phihos/crane-autoscaler/api/v1alpha1"
 	autoscaling "k8s.io/api/autoscaling/v1"
-	hpav1 "k8s.io/api/autoscaling/v1"
+	hpav2 "k8s.io/api/autoscaling/v2"
 )
 
 var _ = Describe("CranePodAutoscaler Controller", func() {
@@ -55,8 +56,8 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 						Namespace: "default",
 					},
 					Spec: autoscalingv1alpha1.CranePodAutoscalerSpec{
-						HPA: hpav1.HorizontalPodAutoscalerSpec{
-							ScaleTargetRef: hpav1.CrossVersionObjectReference{},
+						HPA: hpav2.HorizontalPodAutoscalerSpec{
+							ScaleTargetRef: hpav2.CrossVersionObjectReference{},
 							MaxReplicas:    20,
 						},
 						VPA: vpav1.VerticalPodAutoscalerSpec{

@@ -36,6 +36,8 @@ type CranePodAutoscalerReconciler struct {
 // +kubebuilder:rbac:groups=autoscaling.phihos.github.io,resources=cranepodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=autoscaling.phihos.github.io,resources=cranepodautoscalers/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=autoscaling.phihos.github.io,resources=cranepodautoscalers/finalizers,verbs=update
+// +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=autoscaling.k8s.io,resources=verticalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
