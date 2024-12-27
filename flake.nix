@@ -53,6 +53,7 @@
 
                   golangci-lint
                   yamllint
+                  yamlfmt
                   hadolint
                   setup-envtest
                 ]

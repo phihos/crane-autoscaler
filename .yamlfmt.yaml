@@ -1,0 +1,6 @@
+---
+formatter:
+  type: basic
+  include_document_start: true
+  indentless_arrays: false
+  pad_line_comments: 2

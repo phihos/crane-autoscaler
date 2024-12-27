@@ -19,12 +19,13 @@ package controller
 import (
 	"context"
 
+	autoscalingv1alpha1 "github.com/phihos/crane-autoscaler/api/v1alpha1"
+	hpav2 "k8s.io/api/autoscaling/v2"
 	"k8s.io/apimachinery/pkg/runtime"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	autoscalingv1alpha1 "github.com/phihos/crane-autoscaler/api/v1alpha1"
 )
 
 // CranePodAutoscalerReconciler reconciles a CranePodAutoscaler object
@@ -38,6 +39,7 @@ type CranePodAutoscalerReconciler struct {
 // +kubebuilder:rbac:groups=autoscaling.phihos.github.io,resources=cranepodautoscalers/finalizers,verbs=update
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=autoscaling.k8s.io,resources=verticalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -60,5 +62,7 @@ func (r *CranePodAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.R
 func (r *CranePodAutoscalerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&autoscalingv1alpha1.CranePodAutoscaler{}).
+		Owns(&hpav2.HorizontalPodAutoscaler{}).
+		Owns(&vpav1.VerticalPodAutoscaler{}).
 		Complete(r)
 }
