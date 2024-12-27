@@ -19,6 +19,8 @@ package controller
 import (
 	"context"
 
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -28,6 +30,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	autoscalingv1alpha1 "github.com/phihos/crane-autoscaler/api/v1alpha1"
+	autoscaling "k8s.io/api/autoscaling/v1"
+	hpav2 "k8s.io/api/autoscaling/v2"
 )
 
 var _ = Describe("CranePodAutoscaler Controller", func() {
@@ -51,7 +55,19 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 						Name:      resourceName,
 						Namespace: "default",
 					},
-					// TODO(user): Specify other spec details if needed.
+					Spec: autoscalingv1alpha1.CranePodAutoscalerSpec{
+						HPA: hpav2.HorizontalPodAutoscalerSpec{
+							ScaleTargetRef: hpav2.CrossVersionObjectReference{},
+							MaxReplicas:    20,
+						},
+						VPA: vpav1.VerticalPodAutoscalerSpec{
+							TargetRef: &autoscaling.CrossVersionObjectReference{
+								Kind:       "Deployment",
+								Name:       "some-deployment",
+								APIVersion: "apps/v1",
+							},
+						},
+					},
 				}
 				Expect(k8sClient.Create(ctx, resource)).To(Succeed())
 			}
