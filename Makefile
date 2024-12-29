@@ -108,6 +108,7 @@ generate: ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
+	$(YAMLFMT) -dstar 'config/**/*.{yaml,yml}'
 	go fmt ./...
 
 .PHONY: vet
@@ -132,7 +133,7 @@ lint: pre-commit ## Run golangci-lint linter
 	$(GOLANGCI_LINT) run
 
 .PHONY: lint-fix
-lint-fix: pre-commit ## Run golangci-lint linter and perform fixes
+lint-fix: fmt pre-commit ## Run golangci-lint linter and perform fixes
 	$(GOLANGCI_LINT) run --fix
 
 ##@ Build

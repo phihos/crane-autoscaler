@@ -22,6 +22,8 @@ import (
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
+// Important: Run "make" to regenerate code after modifying this file
+
 // CranePodAutoscalerSpec defines the desired state of CranePodAutoscaler
 type CranePodAutoscalerSpec struct {
 	HPA hpav2.HorizontalPodAutoscalerSpec `json:"hpa"`
@@ -30,8 +32,18 @@ type CranePodAutoscalerSpec struct {
 
 // CranePodAutoscalerStatus defines the observed state of CranePodAutoscaler
 type CranePodAutoscalerStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Represents the observations of a CraneAutoscaler's current state.
+	// CraneAutoscaler.status.conditions.type are: "Available", "Progressing", and "Degraded"
+	// CraneAutoscaler.status.conditions.status are one of True, False, Unknown.
+	// CraneAutoscaler.status.conditions.reason the value should be a CamelCase string and producers of specific
+	// condition types may define expected values and meanings for this field, and whether the values
+	// are considered a guaranteed API.
+	// CraneAutoscaler.status.conditions.Message is a human-readable message indicating details about the transition.
+	// For further information see: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
+
+	// Conditions store the status conditions of the CraneAutoscaler instances
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 // +kubebuilder:object:root=true
