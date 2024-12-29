@@ -57,8 +57,12 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 					},
 					Spec: autoscalingv1alpha1.CranePodAutoscalerSpec{
 						HPA: hpav2.HorizontalPodAutoscalerSpec{
-							ScaleTargetRef: hpav2.CrossVersionObjectReference{},
-							MaxReplicas:    20,
+							ScaleTargetRef: hpav2.CrossVersionObjectReference{
+								Kind:       "Deployment",
+								Name:       "some-deployment",
+								APIVersion: "apps/v1",
+							},
+							MaxReplicas: 20,
 						},
 						VPA: vpav1.VerticalPodAutoscalerSpec{
 							TargetRef: &autoscaling.CrossVersionObjectReference{
