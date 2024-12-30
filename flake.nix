@@ -27,6 +27,7 @@
             default = {
               languages = {
                 go.enable = true;
+                go.enableHardeningWorkaround = true;
                 go.package = pkgs.go_1_23;
               };
 

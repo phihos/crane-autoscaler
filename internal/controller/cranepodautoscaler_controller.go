@@ -102,6 +102,18 @@ func (r *CranePodAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 	}
 
+	err = craneAutoscaler.Validate()
+	if err != nil {
+		meta.SetStatusCondition(&craneAutoscaler.Status.Conditions, metav1.Condition{Type: typeAvailableCraneAutoscaler,
+			Status: metav1.ConditionFalse, Reason: "Reconciling",
+			Message: fmt.Sprintf("Validation failed: %s", err)})
+		if err := r.Status().Update(ctx, craneAutoscaler); err != nil {
+			logger.Error(err, "Failed to update cranepodautoscaler status")
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, err
+	}
+
 	// Get or create VPA.
 	vpa, err := r.getOrCreateVPA(ctx, craneAutoscaler)
 	if err != nil {
