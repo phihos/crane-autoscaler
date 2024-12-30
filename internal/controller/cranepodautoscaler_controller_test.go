@@ -42,7 +42,7 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 
 		typeNamespacedName := types.NamespacedName{
 			Name:      resourceName,
-			Namespace: "default", // TODO(user):Modify as needed
+			Namespace: "default",
 		}
 		cranepodautoscaler := &autoscalingv1alpha1.CranePodAutoscaler{}
 
@@ -99,6 +99,53 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 			// TODO(user): Add more specific assertions depending on your controller's reconciliation logic.
 			// Example: If you expect a certain status condition after reconciliation, verify it here.
+		})
+	})
+	When("creating the custom resource for the Kind CranePodAutoscaler with different targets", func() {
+		const resourceName = "test-resource-with-different-target"
+
+		ctx := context.Background()
+
+		typeNamespacedName := types.NamespacedName{
+			Name:      resourceName,
+			Namespace: "default",
+		}
+		resource := &autoscalingv1alpha1.CranePodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      resourceName,
+				Namespace: "default",
+			},
+			Spec: autoscalingv1alpha1.CranePodAutoscalerSpec{
+				HPA: hpav2.HorizontalPodAutoscalerSpec{
+					ScaleTargetRef: hpav2.CrossVersionObjectReference{
+						Kind:       "Deployment",
+						Name:       "some-deployment",
+						APIVersion: "apps/v1",
+					},
+					MaxReplicas: 20,
+				},
+				VPA: vpav1.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscaling.CrossVersionObjectReference{
+						Kind:       "Deployment",
+						Name:       "some-other-deployment",
+						APIVersion: "apps/v1",
+					},
+				},
+			},
+		}
+
+		It("should fail validation", func() {
+			Expect(k8sClient.Create(ctx, resource)).To(Succeed())
+			By("Reconciling the created resource")
+			controllerReconciler := &CranePodAutoscalerReconciler{
+				Client: k8sClient,
+				Scheme: k8sClient.Scheme(),
+			}
+
+			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: typeNamespacedName,
+			})
+			Expect(err).To(HaveOccurred())
 		})
 	})
 })
