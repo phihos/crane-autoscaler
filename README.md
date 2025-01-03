@@ -3,6 +3,10 @@
 Use both vertical and horizontal pod autoscaler on the same set of resources.
 This operator prevents the two autoscalers from fighting each other by enabling only one at a time.
 
+<img src="docs/assets/logo.svg" alt="logo" width="15%"/>
+
+----
+
 ## Description
 // TODO(user): An in-depth paragraph about your project and overview of use
 

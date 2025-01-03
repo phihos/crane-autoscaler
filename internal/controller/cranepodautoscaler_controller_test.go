@@ -19,6 +19,8 @@ package controller
 import (
 	"context"
 
+	"k8s.io/utils/ptr"
+
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -62,6 +64,7 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 								Name:       "some-deployment",
 								APIVersion: "apps/v1",
 							},
+							MinReplicas: ptr.To[int32](1),
 							MaxReplicas: 20,
 						},
 						VPA: vpav1.VerticalPodAutoscalerSpec{
@@ -69,6 +72,9 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 								Kind:       "Deployment",
 								Name:       "some-deployment",
 								APIVersion: "apps/v1",
+							},
+							UpdatePolicy: &vpav1.PodUpdatePolicy{
+								UpdateMode: ptr.To[vpav1.UpdateMode](vpav1.UpdateModeAuto),
 							},
 						},
 					},
@@ -122,6 +128,7 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 						Name:       "some-deployment",
 						APIVersion: "apps/v1",
 					},
+					MinReplicas: ptr.To[int32](1),
 					MaxReplicas: 20,
 				},
 				VPA: vpav1.VerticalPodAutoscalerSpec{
@@ -129,6 +136,9 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 						Kind:       "Deployment",
 						Name:       "some-other-deployment",
 						APIVersion: "apps/v1",
+					},
+					UpdatePolicy: &vpav1.PodUpdatePolicy{
+						UpdateMode: ptr.To[vpav1.UpdateMode](vpav1.UpdateModeAuto),
 					},
 				},
 			},

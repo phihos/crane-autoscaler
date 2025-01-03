@@ -22,6 +22,7 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	hpav2 "k8s.io/api/autoscaling/v2"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/utils/ptr"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -30,6 +31,34 @@ var _ = Describe("CranePodAutoscaler Webhook", func() {
 
 	Context("When creating CranePodAutoscaler under Validating Webhook", func() {
 		It("Should deny if target refs are different", func() {
+			resource := &CranePodAutoscaler{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-resource",
+					Namespace: "default",
+				},
+				Spec: CranePodAutoscalerSpec{
+					HPA: hpav2.HorizontalPodAutoscalerSpec{
+						ScaleTargetRef: hpav2.CrossVersionObjectReference{
+							Kind:       "Deployment",
+							Name:       "some-deployment",
+							APIVersion: "apps/v1",
+						},
+						MinReplicas: ptr.To[int32](1),
+						MaxReplicas: 20,
+					},
+					VPA: vpav1.VerticalPodAutoscalerSpec{
+						TargetRef: &autoscaling.CrossVersionObjectReference{
+							Kind:       "Deployment",
+							Name:       "some-other-deployment",
+							APIVersion: "apps/v1",
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, resource)).NotTo(Succeed())
+		})
+
+		It("Should deny if HPA MinReplicas is not set", func() {
 			resource := &CranePodAutoscaler{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-resource",
@@ -54,7 +83,6 @@ var _ = Describe("CranePodAutoscaler Webhook", func() {
 				},
 			}
 			Expect(k8sClient.Create(ctx, resource)).NotTo(Succeed())
-
 		})
 
 		It("Should admit if all required fields are provided", func() {
@@ -70,6 +98,7 @@ var _ = Describe("CranePodAutoscaler Webhook", func() {
 							Name:       "some-deployment",
 							APIVersion: "apps/v1",
 						},
+						MinReplicas: ptr.To[int32](1),
 						MaxReplicas: 20,
 					},
 					VPA: vpav1.VerticalPodAutoscalerSpec{
@@ -77,6 +106,9 @@ var _ = Describe("CranePodAutoscaler Webhook", func() {
 							Kind:       "Deployment",
 							Name:       "some-deployment",
 							APIVersion: "apps/v1",
+						},
+						UpdatePolicy: &vpav1.PodUpdatePolicy{
+							UpdateMode: ptr.To[vpav1.UpdateMode](vpav1.UpdateModeAuto),
 						},
 					},
 				},
