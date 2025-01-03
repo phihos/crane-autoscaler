@@ -42,6 +42,9 @@ var _ webhook.Defaulter = &CranePodAutoscaler{}
 func (r *CranePodAutoscaler) Default() {
 	cranepodautoscalerlog.Info("default", "name", r.Name)
 
+	if r.Spec.Behavior.VPACapacityThresholdPercent == 0 {
+		r.Spec.Behavior.VPACapacityThresholdPercent = 80
+	}
 }
 
 // NOTE: The 'path' attribute must follow a specific pattern and should not be modified directly here.

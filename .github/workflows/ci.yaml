@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        k8s_version: ["v1.28.9", "v1.29.4", "v1.30.0"]
+        k8s_version: ["v1.28.9", "v1.29.4", "v1.30.8", "v1.31.4", "v1.32.0"]
 
     steps:
       - name: Checkout repository

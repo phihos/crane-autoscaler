@@ -39,6 +39,19 @@ spec:
             spec:
               description: CranePodAutoscalerSpec defines the desired state of CranePodAutoscaler
               properties:
+                behavior:
+                  properties:
+                    vpaCapacityThresholdPercent:
+                      description: |-
+                        Percentage of the VPA target and the upper bound.
+                        Exceeding this threshold will cause autoscaling to switch from vertical to horizontal autoscaling.
+                        Falling below this threshold will cause autoscaling to switch from horizontal to vertical autoscaling
+                        if the HPA scaled down to min replicas.
+                      format: int32
+                      maximum: 100
+                      minimum: 0
+                      type: integer
+                  type: object
                 hpa:
                   description: HorizontalPodAutoscalerSpec describes the desired functionality of the HorizontalPodAutoscaler.
                   properties:
@@ -808,6 +821,7 @@ spec:
                     - targetRef
                   type: object
               required:
+                - behavior
                 - hpa
                 - vpa
               type: object

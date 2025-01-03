@@ -26,8 +26,24 @@ import (
 
 // CranePodAutoscalerSpec defines the desired state of CranePodAutoscaler
 type CranePodAutoscalerSpec struct {
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	HPA hpav2.HorizontalPodAutoscalerSpec `json:"hpa"`
-	VPA vpav1.VerticalPodAutoscalerSpec   `json:"vpa"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	VPA vpav1.VerticalPodAutoscalerSpec `json:"vpa"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Behavior CranePodAutoscalerBehavior `json:"behavior"`
+}
+
+type CranePodAutoscalerBehavior struct {
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Maximum=100
+	// +kubebuilder:validation:ExclusiveMaximum=false
+	// Percentage of the VPA target and the upper bound.
+	// Exceeding this threshold will cause autoscaling to switch from vertical to horizontal autoscaling.
+	// Falling below this threshold will cause autoscaling to switch from horizontal to vertical autoscaling
+	// if the HPA scaled down to min replicas.
+	// +operator-sdk:csv:customresourcedefinitions:type=behavior
+	VPACapacityThresholdPercent int32 `json:"vpaCapacityThresholdPercent,omitempty"`
 }
 
 // CranePodAutoscalerStatus defines the observed state of CranePodAutoscaler
@@ -47,6 +63,7 @@ type CranePodAutoscalerStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:spec
 // +kubebuilder:subresource:status
 
 // CranePodAutoscaler is the Schema for the cranepodautoscalers API

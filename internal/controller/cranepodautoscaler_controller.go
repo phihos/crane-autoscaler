@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/go-cmp/cmp"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,10 +39,13 @@ import (
 
 // Definitions to manage status conditions
 const (
+	refVPA = "VPA"
+	refHPA = "HPA"
 	// typeAvailableCraneAutoscaler represents the status of the Deployment reconciliation
 	typeAvailableCraneAutoscaler = "Available"
 	// typeDegradedCraneAutoscaler represents the status used when the custom resource is deleted and the finalizer operations are yet to occur.
 	// typeDegradedCraneAutoscaler = "Degraded"
+	typeScalingDecisionCraneAutoscaler = "ScalingDecision"
 )
 
 // CranePodAutoscalerReconciler reconciles a CranePodAutoscaler object
@@ -60,10 +65,6 @@ type CranePodAutoscalerReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the CranePodAutoscaler object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.18.4/pkg/reconcile
@@ -86,7 +87,7 @@ func (r *CranePodAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	if len(craneAutoscaler.Status.Conditions) == 0 {
 		meta.SetStatusCondition(&craneAutoscaler.Status.Conditions, metav1.Condition{Type: typeAvailableCraneAutoscaler, Status: metav1.ConditionUnknown, Reason: "Reconciling", Message: "Starting reconciliation"})
-		if err = r.Status().Update(ctx, craneAutoscaler); err != nil {
+		if err := r.Status().Update(ctx, craneAutoscaler); err != nil {
 			logger.Error(err, "Failed to update cranepodautoscaler status")
 			return ctrl.Result{}, err
 		}
@@ -102,8 +103,7 @@ func (r *CranePodAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 	}
 
-	err = craneAutoscaler.Validate()
-	if err != nil {
+	if err := craneAutoscaler.Validate(); err != nil {
 		meta.SetStatusCondition(&craneAutoscaler.Status.Conditions, metav1.Condition{Type: typeAvailableCraneAutoscaler,
 			Status: metav1.ConditionFalse, Reason: "Reconciling",
 			Message: fmt.Sprintf("Validation failed: %s", err)})
@@ -115,64 +115,142 @@ func (r *CranePodAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	// Get or create VPA.
-	vpa, err := r.getOrCreateVPA(ctx, craneAutoscaler)
+	vpaCreated, vpa, err := r.getOrCreateVPA(ctx, craneAutoscaler)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	// Get or create HPA.
-	hpa, err := r.getOrCreateHPA(ctx, craneAutoscaler)
+	hpaCreated, hpa, err := r.getOrCreateHPA(ctx, craneAutoscaler)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	logger.Info("Got VPA and HPA", "VPA", vpa.Name, "HPA", hpa.Name)
+	logger.Info("Got VPA and HPA", refVPA, vpa.Name, refHPA, hpa.Name)
+
+	// Now we get to the core logic: We now decide which autoscaler to activate.
+	// The other autoscaler will be deactivated.
+	var activeAutoscaler string
+	var passiveAutoscaler string
+	lastScalingDecisionCondition := meta.FindStatusCondition(craneAutoscaler.Status.Conditions, typeScalingDecisionCraneAutoscaler)
+	if vpaCreated || hpaCreated {
+		// Special case: One or more autoscalers were just created.
+		//               When that happens we initialize the scaling decision with HPA
+		//               as this is the safer option in terms of availability.
+		activeAutoscaler = refHPA
+		passiveAutoscaler = refVPA
+	} else if lastScalingDecisionCondition == nil {
+		// Special case: Autoscalers already exist, but scaling decision has not been recorded to CRD status.
+		//               We default to "HPA" as this is the safer option in terms of availability.
+		//               This should not happen.
+		activeAutoscaler = refHPA
+		passiveAutoscaler = refVPA
+	} else {
+		// Usual case: VPA and HPA both already exist.
+		// 			   Now our action depends on the current scaling mode.
+		currentlyActiveAutoscaler := lastScalingDecisionCondition.Reason
+		containerName, biggestUtilization := getBiggestContainerResourceUtilization(vpa.Status.Recommendation.ContainerRecommendations)
+		threshold := float32(craneAutoscaler.Spec.Behavior.VPACapacityThresholdPercent) / float32(100)
+		vpaOverThreshold := biggestUtilization > threshold
+		if currentlyActiveAutoscaler == refVPA {
+			// If the current scaling mode is VPA we need to check if the target has reached the utilization threshold.
+			// If yes, then we will switch to HPA.
+			if vpaOverThreshold {
+				activeAutoscaler = refHPA
+				passiveAutoscaler = refVPA
+				logger.Info("VPA target capacity threshold reached. Switching to HPA scaling.", "threshold", threshold, "container", containerName)
+			} else {
+				activeAutoscaler = refVPA
+				passiveAutoscaler = refHPA
+			}
+		} else {
+			// If the current scaling mode is HPA we need to check two things:
+			//   1. Is the HPA at minimum replicas?
+			//   2. Is the VPA recommendation below threshold?
+			// If the answer is "yes" for both we will switch to VPA.
+			hpaDesiredReplicas := hpa.Status.DesiredReplicas
+			hpaMinReplicas := *hpa.Spec.MinReplicas
+			hpaAtMinReplicas := hpaDesiredReplicas <= hpaMinReplicas
+
+			if hpaAtMinReplicas && !vpaOverThreshold {
+				activeAutoscaler = refVPA
+				passiveAutoscaler = refHPA
+				logger.Info("HPA replicas at minimum and VPA is willing to scale down. Switching to VPA scaling.", "hpaMinReplicas", hpaMinReplicas)
+			} else {
+				activeAutoscaler = refHPA
+				passiveAutoscaler = refVPA
+			}
+		}
+	}
+	meta.SetStatusCondition(&craneAutoscaler.Status.Conditions, metav1.Condition{Type: typeScalingDecisionCraneAutoscaler, Status: metav1.ConditionTrue, Reason: activeAutoscaler, Message: fmt.Sprintf("Selected autoscaler is now %s", activeAutoscaler)})
+
+	logger.Info("Decided which autoscaler to activate", "active", activeAutoscaler, "passive", passiveAutoscaler)
+
+	// Reconcile VPA resource
+	if err := r.reconcileVPA(ctx, craneAutoscaler, vpa, activeAutoscaler == refVPA); err != nil {
+		logger.Error(err, "Failed to reconcile VPA")
+		return ctrl.Result{}, err
+	}
+
+	// Reconcile HPA resource
+	if err := r.reconcileHPA(ctx, craneAutoscaler, hpa, activeAutoscaler == refHPA); err != nil {
+		logger.Error(err, "Failed to reconcile HPA")
+		return ctrl.Result{}, err
+	}
+
+	meta.SetStatusCondition(&craneAutoscaler.Status.Conditions, metav1.Condition{Type: typeAvailableCraneAutoscaler, Status: metav1.ConditionTrue, Reason: "Reconciling", Message: "Reconciliation successful"})
+	if err := r.Status().Update(ctx, craneAutoscaler); err != nil {
+		logger.Error(err, "Failed to update cranepodautoscaler status")
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }
 
-func (r *CranePodAutoscalerReconciler) getOrCreateVPA(ctx context.Context, craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler) (*vpav1.VerticalPodAutoscaler, error) {
+func (r *CranePodAutoscalerReconciler) getOrCreateVPA(ctx context.Context, craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler) (bool, *vpav1.VerticalPodAutoscaler, error) {
 	logger := log.FromContext(ctx)
-	resourceKind := "VPA"
+	resourceKind := refVPA
 	vpa := &vpav1.VerticalPodAutoscaler{}
 	err := r.Get(ctx, types.NamespacedName{Name: craneAutoscaler.Name, Namespace: craneAutoscaler.Namespace}, vpa)
 	if err != nil && apierrors.IsNotFound(err) {
-		vpa, err = r.VPAForAutoscaler(craneAutoscaler)
+		vpa, err = r.NewVPAForAutoscaler(craneAutoscaler)
 		if err != nil {
-			return nil, r.handleAutoscalerDefinitionError(ctx, err, resourceKind, craneAutoscaler)
+			return false, nil, r.handleAutoscalerDefinitionError(ctx, err, resourceKind, craneAutoscaler)
 		}
 
 		logger.Info("Creating a new resource",
 			"resource.Kind", resourceKind, "resource.Namespace", vpa.Namespace, "resource.Name", vpa.Name)
 		if err = r.Create(ctx, vpa); err != nil {
-			return nil, r.handleAutoscalerCreationError(ctx, err, resourceKind, vpa.Namespace, vpa.Name)
+			return false, nil, r.handleAutoscalerCreationError(ctx, err, resourceKind, vpa.Namespace, vpa.Name)
 		}
+		return true, vpa, nil
 	} else if err != nil {
-		return nil, err
+		return false, nil, err
 	}
-	return vpa, nil
+	return false, vpa, nil
 }
 
-func (r *CranePodAutoscalerReconciler) getOrCreateHPA(ctx context.Context, craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler) (*hpav2.HorizontalPodAutoscaler, error) {
+func (r *CranePodAutoscalerReconciler) getOrCreateHPA(ctx context.Context, craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler) (bool, *hpav2.HorizontalPodAutoscaler, error) {
 	logger := log.FromContext(ctx)
-	resourceKind := "HPA"
+	resourceKind := refHPA
 	hpa := &hpav2.HorizontalPodAutoscaler{}
 	err := r.Get(ctx, types.NamespacedName{Name: craneAutoscaler.Name, Namespace: craneAutoscaler.Namespace}, hpa)
 	if err != nil && apierrors.IsNotFound(err) {
-		hpa, err = r.HPAForAutoscaler(craneAutoscaler)
+		hpa, err = r.NewHPAForAutoscaler(craneAutoscaler)
 		if err != nil {
-			return nil, r.handleAutoscalerDefinitionError(ctx, err, resourceKind, craneAutoscaler)
+			return false, nil, r.handleAutoscalerDefinitionError(ctx, err, resourceKind, craneAutoscaler)
 		}
 
 		logger.Info("Creating a new resource",
 			"resource.Kind", resourceKind, "resource.Namespace", hpa.Namespace, "resource.Name", hpa.Name)
 		if err = r.Create(ctx, hpa); err != nil {
-			return nil, r.handleAutoscalerCreationError(ctx, err, resourceKind, hpa.Namespace, hpa.Name)
+			return false, nil, r.handleAutoscalerCreationError(ctx, err, resourceKind, hpa.Namespace, hpa.Name)
 		}
+		return true, hpa, nil
 	} else if err != nil {
-		return nil, err
+		return false, nil, err
 	}
-	return hpa, nil
+	return false, hpa, nil
 }
 
 func (r *CranePodAutoscalerReconciler) handleAutoscalerCreationError(ctx context.Context, err error, resourceKind string, namespace string, name string) error {
@@ -199,28 +277,16 @@ func (r *CranePodAutoscalerReconciler) handleAutoscalerDefinitionError(ctx conte
 	return err
 }
 
-func (r *CranePodAutoscalerReconciler) VPAForAutoscaler(craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler) (*vpav1.VerticalPodAutoscaler, error) {
-	vpa := &vpav1.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      craneAutoscaler.Name,
-			Namespace: craneAutoscaler.Namespace,
-		},
-		Spec: craneAutoscaler.Spec.VPA,
-	}
+func (r *CranePodAutoscalerReconciler) NewVPAForAutoscaler(craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler) (*vpav1.VerticalPodAutoscaler, error) {
+	vpa := craneAutoscaler.GenerateDisabledVPA()
 	if err := ctrl.SetControllerReference(craneAutoscaler, vpa, r.Scheme); err != nil {
 		return nil, err
 	}
 	return vpa, nil
 }
 
-func (r *CranePodAutoscalerReconciler) HPAForAutoscaler(craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler) (*hpav2.HorizontalPodAutoscaler, error) {
-	hpa := &hpav2.HorizontalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      craneAutoscaler.Name,
-			Namespace: craneAutoscaler.Namespace,
-		},
-		Spec: craneAutoscaler.Spec.HPA,
-	}
+func (r *CranePodAutoscalerReconciler) NewHPAForAutoscaler(craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler) (*hpav2.HorizontalPodAutoscaler, error) {
+	hpa := craneAutoscaler.GenerateEnabledHPA()
 	if err := ctrl.SetControllerReference(craneAutoscaler, hpa, r.Scheme); err != nil {
 		return nil, err
 	}
@@ -234,4 +300,79 @@ func (r *CranePodAutoscalerReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Owns(&hpav2.HorizontalPodAutoscaler{}).
 		Owns(&vpav1.VerticalPodAutoscaler{}).
 		Complete(r)
+}
+
+func getBiggestContainerResourceUtilization(vpaContainerResources []vpav1.RecommendedContainerResources) (string, float32) {
+	utilization := float32(0.0)
+	containerName := "NOCONTAINER"
+	for _, containerResource := range vpaContainerResources {
+		targetCpu := containerResource.Target.Cpu().MilliValue()
+		upperBoundCpu := containerResource.UpperBound.Cpu().MilliValue()
+		cpuUtilization := float32(targetCpu) / float32(upperBoundCpu)
+		targetMem := containerResource.Target.Memory().Value()
+		upperBoundMem := containerResource.UpperBound.Memory().Value()
+		memUtilization := float32(targetMem) / float32(upperBoundMem)
+
+		if cpuUtilization > utilization {
+			utilization = cpuUtilization
+			containerName = containerResource.ContainerName
+		}
+		if memUtilization > utilization {
+			utilization = memUtilization
+			containerName = containerResource.ContainerName
+		}
+	}
+
+	return containerName, utilization
+}
+
+func (r *CranePodAutoscalerReconciler) reconcileVPA(ctx context.Context, craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler, vpa *vpav1.VerticalPodAutoscaler, active bool) error {
+	logger := log.FromContext(ctx)
+	desiredVPA := &vpav1.VerticalPodAutoscaler{}
+	if active {
+		desiredVPA = craneAutoscaler.GenerateEnabledVPA()
+	} else {
+		desiredVPA = craneAutoscaler.GenerateDisabledVPA()
+	}
+	if err := ctrl.SetControllerReference(craneAutoscaler, desiredVPA, r.Scheme); err != nil {
+		return err
+	}
+	desiredVPA.Status = vpa.Status
+	if !cmp.Equal(desiredVPA.Spec, vpa.Spec) {
+		logger.Info("Updating VPA", "diff", cmp.Diff(desiredVPA.Spec, vpa.Spec))
+		vpa.Spec = desiredVPA.Spec
+		if err := r.Update(ctx, vpa); err != nil {
+			logger.Error(err, "Failed to update resource", "resource.Kind", refVPA,
+				"resource.Namespace", vpa.Namespace, "resource.Name", vpa.Name)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *CranePodAutoscalerReconciler) reconcileHPA(ctx context.Context, craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler, hpa *hpav2.HorizontalPodAutoscaler, active bool) error {
+	logger := log.FromContext(ctx)
+	desiredHPA := &hpav2.HorizontalPodAutoscaler{}
+	if active {
+		desiredHPA = craneAutoscaler.GenerateEnabledHPA()
+	} else {
+		desiredHPA = craneAutoscaler.GenerateDisabledHPA()
+	}
+	if err := ctrl.SetControllerReference(craneAutoscaler, desiredHPA, r.Scheme); err != nil {
+		return err
+	}
+	desiredHPA.Status = hpa.Status
+
+	if !cmp.Equal(desiredHPA.Spec, hpa.Spec) {
+		logger.Info("Updating HPA", "diff", cmp.Diff(desiredHPA.Spec, hpa.Spec))
+		hpa.Spec = desiredHPA.Spec
+		if err := r.Update(ctx, hpa); err != nil {
+			logger.Error(err, "Failed to update resource", "resource.Kind", refHPA,
+				"resource.Namespace", hpa.Namespace, "resource.Name", hpa.Name)
+			return err
+		}
+	}
+
+	return nil
 }
