@@ -9,7 +9,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
 	k8s.io/api v0.32.1
-	k8s.io/apimachinery v0.32.1
+	k8s.io/apimachinery v0.32.2
 	k8s.io/autoscaler/vertical-pod-autoscaler v1.2.2
 	k8s.io/client-go v0.32.1
 	k8s.io/utils v0.0.0-20241210054802-24370beab758
