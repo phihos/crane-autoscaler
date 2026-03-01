@@ -26,12 +26,9 @@ import (
 
 // CranePodAutoscalerSpec defines the desired state of CranePodAutoscaler
 type CranePodAutoscalerSpec struct {
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	HPA hpav2.HorizontalPodAutoscalerSpec `json:"hpa"`
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	VPA vpav1.VerticalPodAutoscalerSpec `json:"vpa"`
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Behavior CranePodAutoscalerBehavior `json:"behavior"`
+	HPA      hpav2.HorizontalPodAutoscalerSpec `json:"hpa"`
+	VPA      vpav1.VerticalPodAutoscalerSpec   `json:"vpa"`
+	Behavior CranePodAutoscalerBehavior        `json:"behavior"`
 }
 
 type CranePodAutoscalerBehavior struct {
@@ -42,7 +39,6 @@ type CranePodAutoscalerBehavior struct {
 	// Exceeding this threshold will cause autoscaling to switch from vertical to horizontal autoscaling.
 	// Falling below this threshold will cause autoscaling to switch from horizontal to vertical autoscaling
 	// if the HPA scaled down to min replicas.
-	// +operator-sdk:csv:customresourcedefinitions:type=behavior
 	VPACapacityThresholdPercent int32 `json:"vpaCapacityThresholdPercent,omitempty"`
 }
 
@@ -58,7 +54,6 @@ type CranePodAutoscalerStatus struct {
 	// For further information see: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
 
 	// Conditions store the status conditions of the CraneAutoscaler instances
-	// +operator-sdk:csv:customresourcedefinitions:type=status
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
