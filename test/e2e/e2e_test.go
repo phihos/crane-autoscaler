@@ -27,28 +27,16 @@ import (
 	"github.com/phihos/crane-autoscaler/test/utils"
 )
 
-const namespace = "tmp-system"
+const namespace = "crane-autoscaler-system"
 
 var _ = Describe("controller", Ordered, func() {
 	BeforeAll(func() {
-		By("installing prometheus operator")
-		Expect(utils.InstallPrometheusOperator()).To(Succeed())
-
-		By("installing the cert-manager")
-		Expect(utils.InstallCertManager()).To(Succeed())
-
 		By("creating manager namespace")
 		cmd := exec.Command("kubectl", "create", "ns", namespace)
 		_, _ = utils.Run(cmd)
 	})
 
 	AfterAll(func() {
-		By("uninstalling the Prometheus manager bundle")
-		utils.UninstallPrometheusOperator()
-
-		By("uninstalling the cert-manager bundle")
-		utils.UninstallCertManager()
-
 		By("removing manager namespace")
 		cmd := exec.Command("kubectl", "delete", "ns", namespace)
 		_, _ = utils.Run(cmd)
@@ -59,8 +47,7 @@ var _ = Describe("controller", Ordered, func() {
 			var controllerPodName string
 			var err error
 
-			// projectimage stores the name of the image used in the example
-			var projectimage = "phihos.github.io/tmp:v0.0.1"
+			var projectimage = "crane-autoscaler:v0.0.1"
 
 			By("building the manager(Operator) image")
 			cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectimage))
@@ -83,8 +70,6 @@ var _ = Describe("controller", Ordered, func() {
 
 			By("validating that the controller-manager pod is running as expected")
 			verifyControllerUp := func() error {
-				// Get pod name
-
 				cmd = exec.Command("kubectl", "get",
 					"pods", "-l", "control-plane=controller-manager",
 					"-o", "go-template={{ range .items }}"+
@@ -103,7 +88,6 @@ var _ = Describe("controller", Ordered, func() {
 				controllerPodName = podNames[0]
 				ExpectWithOffset(2, controllerPodName).Should(ContainSubstring("controller-manager"))
 
-				// Validate pod status
 				cmd = exec.Command("kubectl", "get",
 					"pods", controllerPodName, "-o", "jsonpath={.status.phase}",
 					"-n", namespace,

@@ -35,11 +35,7 @@ import (
 	autoscalingv1alpha1 "github.com/phihos/crane-autoscaler/api/v1alpha1"
 	hpav2 "k8s.io/api/autoscaling/v2"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	// +kubebuilder:scaffold:imports
 )
-
-// These tests use Ginkgo (BDD-style Go testing framework). Refer to
-// http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
 var cfg *rest.Config
 var k8sClient client.Client
@@ -58,12 +54,6 @@ var _ = BeforeSuite(func() {
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "config", "crd", "bases")},
 		ErrorIfCRDPathMissing: true,
-
-		// The BinaryAssetsDirectory is only required if you want to run the tests directly
-		// without call the makefile target test. If not informed it will look for the
-		// default path defined in controller-runtime which is /usr/local/kubebuilder/.
-		// Note that you must have the required binaries setup under the bin directory to perform
-		// the tests directly. When we run make test it will be setup and used automatically.
 		BinaryAssetsDirectory: filepath.Join("..", "..", "bin", "k8s",
 			fmt.Sprintf("1.30.0-%s-%s", runtime.GOOS, runtime.GOARCH)),
 	}
@@ -80,8 +70,6 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	err = hpav2.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
-
-	// +kubebuilder:scaffold:scheme
 
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	Expect(err).NotTo(HaveOccurred())
