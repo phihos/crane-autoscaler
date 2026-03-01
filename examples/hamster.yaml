@@ -58,7 +58,7 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 65534 # nobody
+        runAsUser: 65534  # nobody
       containers:
         - name: hamster
           image: registry.k8s.io/ubuntu-slim:0.14
