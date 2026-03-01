@@ -10,7 +10,7 @@ require (
 	github.com/onsi/gomega v1.36.2
 	k8s.io/api v0.32.1
 	k8s.io/apimachinery v0.32.1
-	k8s.io/autoscaler/vertical-pod-autoscaler v1.2.2
+	k8s.io/autoscaler/vertical-pod-autoscaler v1.3.0
 	k8s.io/client-go v0.32.1
 	k8s.io/utils v0.0.0-20241210054802-24370beab758
 	sigs.k8s.io/controller-runtime v0.19.3
@@ -28,7 +28,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
