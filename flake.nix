@@ -28,7 +28,7 @@
               languages = {
                 go.enable = true;
                 go.enableHardeningWorkaround = true;
-                go.package = pkgs.go_1_23;
+                go.package = pkgs.go_1_25;
               };
 
               pre-commit.hooks = {
