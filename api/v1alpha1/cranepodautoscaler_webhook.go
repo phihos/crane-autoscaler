@@ -17,10 +17,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
+	"context"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -29,47 +29,55 @@ var cranepodautoscalerlog = logf.Log.WithName("cranepodautoscaler-resource")
 
 // SetupWebhookWithManager will setup the manager to manage the webhooks
 func (r *CranePodAutoscaler) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
+	return ctrl.NewWebhookManagedBy(mgr, &CranePodAutoscaler{}).
+		WithDefaulter(&cranePodAutoscalerDefaulter{}).
+		WithValidator(&cranePodAutoscalerValidator{}).
 		Complete()
 }
 
 // +kubebuilder:webhook:path=/mutate-autoscaling-phihos-github-io-v1alpha1-cranepodautoscaler,mutating=true,failurePolicy=fail,sideEffects=None,groups=autoscaling.phihos.github.io,resources=cranepodautoscalers,verbs=create;update,versions=v1alpha1,name=mcranepodautoscaler.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &CranePodAutoscaler{}
+// cranePodAutoscalerDefaulter implements admission.Defaulter for CranePodAutoscaler.
+type cranePodAutoscalerDefaulter struct{}
 
-// Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *CranePodAutoscaler) Default() {
-	cranepodautoscalerlog.Info("default", "name", r.Name)
+var _ admission.Defaulter[*CranePodAutoscaler] = &cranePodAutoscalerDefaulter{}
 
-	if r.Spec.Behavior.VPACapacityThresholdPercent == 0 {
-		r.Spec.Behavior.VPACapacityThresholdPercent = 80
+// Default implements admission.Defaulter so a webhook will be registered for the type.
+func (d *cranePodAutoscalerDefaulter) Default(_ context.Context, obj *CranePodAutoscaler) error {
+	cranepodautoscalerlog.Info("default", "name", obj.Name)
+
+	if obj.Spec.Behavior.VPACapacityThresholdPercent == 0 {
+		obj.Spec.Behavior.VPACapacityThresholdPercent = 80
 	}
+	return nil
 }
 
 // NOTE: The 'path' attribute must follow a specific pattern and should not be modified directly here.
 // Modifying the path for an invalid path can cause API server errors; failing to locate the webhook.
 // +kubebuilder:webhook:path=/validate-autoscaling-phihos-github-io-v1alpha1-cranepodautoscaler,mutating=false,failurePolicy=fail,sideEffects=None,groups=autoscaling.phihos.github.io,resources=cranepodautoscalers,verbs=create;update,versions=v1alpha1,name=vcranepodautoscaler.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Validator = &CranePodAutoscaler{}
+// cranePodAutoscalerValidator implements admission.Validator for CranePodAutoscaler.
+type cranePodAutoscalerValidator struct{}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *CranePodAutoscaler) ValidateCreate() (admission.Warnings, error) {
-	cranepodautoscalerlog.Info("validate create", "name", r.Name)
+var _ admission.Validator[*CranePodAutoscaler] = &cranePodAutoscalerValidator{}
 
-	return nil, r.Validate()
+// ValidateCreate implements admission.Validator so a webhook will be registered for the type.
+func (v *cranePodAutoscalerValidator) ValidateCreate(_ context.Context, obj *CranePodAutoscaler) (admission.Warnings, error) {
+	cranepodautoscalerlog.Info("validate create", "name", obj.Name)
+
+	return nil, obj.Validate()
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *CranePodAutoscaler) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
-	cranepodautoscalerlog.Info("validate update", "name", r.Name)
+// ValidateUpdate implements admission.Validator so a webhook will be registered for the type.
+func (v *cranePodAutoscalerValidator) ValidateUpdate(_ context.Context, _, obj *CranePodAutoscaler) (admission.Warnings, error) {
+	cranepodautoscalerlog.Info("validate update", "name", obj.Name)
 
-	return nil, r.Validate()
+	return nil, obj.Validate()
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *CranePodAutoscaler) ValidateDelete() (admission.Warnings, error) {
-	cranepodautoscalerlog.Info("validate delete", "name", r.Name)
+// ValidateDelete implements admission.Validator so a webhook will be registered for the type.
+func (v *cranePodAutoscalerValidator) ValidateDelete(_ context.Context, obj *CranePodAutoscaler) (admission.Warnings, error) {
+	cranepodautoscalerlog.Info("validate delete", "name", obj.Name)
 
 	return nil, nil
 }
