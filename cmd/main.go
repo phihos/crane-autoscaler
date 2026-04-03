@@ -96,9 +96,8 @@ func main() {
 	}
 
 	if err = (&controller.CranePodAutoscalerReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("crane-autoscaler"),
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CranePodAutoscaler")
 		os.Exit(1)

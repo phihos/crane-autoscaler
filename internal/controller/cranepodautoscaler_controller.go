@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
 
 	autoscalingv1alpha1 "github.com/phihos/crane-autoscaler/api/v1alpha1"
 	hpav2 "k8s.io/api/autoscaling/v2"
@@ -51,8 +50,7 @@ const (
 // CranePodAutoscalerReconciler reconciles a CranePodAutoscaler object
 type CranePodAutoscalerReconciler struct {
 	client.Client
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Scheme *runtime.Scheme
 }
 
 // +kubebuilder:rbac:groups=autoscaling.phihos.github.io,resources=cranepodautoscalers,verbs=get;list;watch;create;update;patch;delete
