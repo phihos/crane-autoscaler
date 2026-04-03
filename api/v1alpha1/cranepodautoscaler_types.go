@@ -58,7 +58,6 @@ type CranePodAutoscalerStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:subresource:spec
 // +kubebuilder:subresource:status
 
 // CranePodAutoscaler is the Schema for the cranepodautoscalers API
