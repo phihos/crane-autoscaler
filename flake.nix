@@ -31,7 +31,7 @@
                 go.package = pkgs.go_1_25;
               };
 
-              pre-commit.hooks = {
+              git-hooks.hooks = {
                 nixpkgs-fmt.enable = true;
                 yamllint.enable = true;
                 hadolint.enable = true;
