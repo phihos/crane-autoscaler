@@ -8,7 +8,13 @@ This operator prevents the two autoscalers from fighting each other by enabling 
 ----
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+
+Crane Autoscaler is a Kubernetes operator that manages both a Vertical Pod Autoscaler (VPA) and a Horizontal Pod Autoscaler (HPA) for the same workload through a single `CranePodAutoscaler` custom resource.
+
+It solves the problem that VPA and HPA cannot be used together on the same workload because they would conflict with each other. Crane Autoscaler enables only one at a time and switches between them based on a configurable capacity threshold:
+
+- **VPA-active mode**: The VPA scales resources vertically. When the VPA recommendation reaches a configured percentage (`vpaCapacityThresholdPercent`) of its upper bound, the operator switches to HPA.
+- **HPA-active mode**: The HPA scales horizontally. When the HPA has scaled back down to its minimum replicas and the VPA recommendation drops below the threshold, the operator switches back to VPA.
 
 ## Getting Started
 
@@ -22,12 +28,11 @@ This operator prevents the two autoscalers from fighting each other by enabling 
 **Build and push your image to the location specified by `IMG`:**
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/tmp:tag
+make docker-build docker-push IMG=<your-registry>/crane-autoscaler:<tag>
 ```
 
-**NOTE:** This image ought to be published in the personal registry you specified.
-And it is required to have access to pull the image from the working environment.
-Make sure you have the proper permission to the registry if the above commands don’t work.
+**NOTE:** Replace `<your-registry>` and `<tag>` with your container registry and desired image tag.
+Make sure you have push access to the registry and that your cluster can pull from it.
 
 **Install the CRDs into the cluster:**
 
@@ -38,7 +43,7 @@ make install
 **Deploy the Manager to the cluster with the image specified by `IMG`:**
 
 ```sh
-make deploy IMG=<some-registry>/tmp:tag
+make deploy IMG=<your-registry>/crane-autoscaler:<tag>
 ```
 
 > **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
@@ -79,7 +84,7 @@ Following are the steps to build the installer and distribute this project to us
 1. Build the installer for the image built and published in the registry:
 
 ```sh
-make build-installer IMG=<some-registry>/tmp:tag
+make build-installer IMG=<your-registry>/crane-autoscaler:<tag>
 ```
 
 NOTE: The makefile target mentioned above generates an 'install.yaml'
@@ -92,15 +97,14 @@ its dependencies.
 Users can just run kubectl apply -f <URL for YAML BUNDLE> to install the project, i.e.:
 
 ```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/tmp/<tag or branch>/dist/install.yaml
+kubectl apply -f https://raw.githubusercontent.com/phihos/crane-autoscaler/<tag or branch>/dist/install.yaml
 ```
 
 ## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
 
-**NOTE:** Run `make help` for more information on all potential `make` targets
+Contributions are welcome. Please open an issue or pull request on GitHub.
 
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+Run `make help` to see all available `make` targets.
 
 ## License
 
