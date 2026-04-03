@@ -3,7 +3,6 @@ package v1alpha1
 import (
 	hpav2 "k8s.io/api/autoscaling/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
@@ -20,7 +19,7 @@ func (r *CranePodAutoscaler) GenerateEnabledVPA() *vpav1.VerticalPodAutoscaler {
 
 func (r *CranePodAutoscaler) GenerateDisabledVPA() *vpav1.VerticalPodAutoscaler {
 	vpaSpec := r.Spec.VPA.DeepCopy()
-	updateModeOff := vpa_types.UpdateModeOff
+	updateModeOff := vpav1.UpdateModeOff
 	vpaSpec.UpdatePolicy.UpdateMode = &updateModeOff
 	return &vpav1.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{

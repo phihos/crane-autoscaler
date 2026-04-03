@@ -58,7 +58,7 @@ test-e2e: ## Run the e2e tests against a Kind k8s instance that is spun up.
 
 .PHONY: pre-commit
 pre-commit: ## Run pre-commit hooks
-	pre-commit run -a
+	prek run -a
 
 .PHONY: lint
 lint: pre-commit ## Run golangci-lint linter

@@ -28,10 +28,10 @@
               languages = {
                 go.enable = true;
                 go.enableHardeningWorkaround = true;
-                go.package = pkgs.go_1_23;
+                go.package = pkgs.go_1_25;
               };
 
-              pre-commit.hooks = {
+              git-hooks.hooks = {
                 nixpkgs-fmt.enable = true;
                 yamllint.enable = true;
                 hadolint.enable = true;
