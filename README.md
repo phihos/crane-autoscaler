@@ -19,10 +19,10 @@ It solves the problem that VPA and HPA cannot be used together on the same workl
 ## Getting Started
 
 ### Prerequisites
-- go version v1.22.0+
+- go version v1.25.0+
 - docker version 17.03+.
-- kubectl version v1.11.3+.
-- Access to a Kubernetes v1.11.3+ cluster.
+- kubectl version v1.28+.
+- Access to a Kubernetes v1.28+ cluster.
 
 ### To Deploy on the cluster
 **Build and push your image to the location specified by `IMG`:**

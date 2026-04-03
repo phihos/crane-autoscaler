@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Crane Autoscaler is a Kubernetes operator that coordinates HPA and VPA on the same workload. It prevents conflicts by enabling only one autoscaler at a time, switching between them based on resource utilization thresholds.
 
-Built with Kubebuilder v4, Go 1.23, and controller-runtime v0.19.
+Built with Kubebuilder v4, Go 1.25, and controller-runtime v0.19.
 
 ## Common Commands
 
