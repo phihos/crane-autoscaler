@@ -111,6 +111,20 @@ func vpaContainerRecommendation(targetCPU, targetMem string) vpav1.RecommendedCo
 	}
 }
 
+func vpaContainerRecommendationWithUpperBound(targetCPU, targetMem, upperCPU, upperMem string) vpav1.RecommendedContainerResources {
+	return vpav1.RecommendedContainerResources{
+		ContainerName: "app",
+		Target: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse(targetCPU),
+			corev1.ResourceMemory: resource.MustParse(targetMem),
+		},
+		UpperBound: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse(upperCPU),
+			corev1.ResourceMemory: resource.MustParse(upperMem),
+		},
+	}
+}
+
 func cleanup(ctx context.Context, name string) {
 	nn := types.NamespacedName{Name: name, Namespace: testNS}
 
@@ -481,6 +495,70 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 			setHPAStatus(ctx, name, 2)
 
 			// Second reconcile: VPA has no recommendation. Must not panic and should stay on HPA.
+			_, err = doReconcile(ctx, name)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(k8sClient.Get(ctx, nn(name), cpa)).To(Succeed())
+			decision := meta.FindStatusCondition(cpa.Status.Conditions, "ScalingDecision")
+			Expect(decision).NotTo(BeNil())
+			Expect(decision.Reason).To(Equal("HPA"))
+		})
+
+		It("does not panic when VPA upper bound is zero and treats utilization as zero", func() {
+			const name = "test-zero-upperbound"
+			defer cleanup(ctx, name)
+
+			cpa := newCranePodAutoscaler(name)
+			Expect(k8sClient.Create(ctx, cpa)).To(Succeed())
+
+			// First reconcile: creates HPA+VPA, defaults to HPA active.
+			_, err := doReconcile(ctx, name)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Set HPA at min replicas and VPA recommendation with zero upper bounds.
+			setHPAStatus(ctx, name, 2)
+			setVPARecommendation(ctx, name, []vpav1.RecommendedContainerResources{
+				vpaContainerRecommendationWithUpperBound("500m", "500Mi", "0", "0"),
+			})
+
+			// Reconcile must not panic and should transition to VPA
+			// since zero upper bound means zero utilization (below threshold).
+			_, err = doReconcile(ctx, name)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(k8sClient.Get(ctx, nn(name), cpa)).To(Succeed())
+			decision := meta.FindStatusCondition(cpa.Status.Conditions, "ScalingDecision")
+			Expect(decision).NotTo(BeNil())
+			Expect(decision.Reason).To(Equal("VPA"))
+		})
+
+		It("handles partial zero upper bound (only CPU zero) without panic", func() {
+			const name = "test-partial-zero-upperbound"
+			defer cleanup(ctx, name)
+
+			cpa := newCranePodAutoscaler(name)
+			Expect(k8sClient.Create(ctx, cpa)).To(Succeed())
+
+			_, err := doReconcile(ctx, name)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Transition to VPA first.
+			setHPAStatus(ctx, name, 2)
+			setVPARecommendation(ctx, name, []vpav1.RecommendedContainerResources{
+				vpaContainerRecommendationWithUpperBound("500m", "500Mi", "1000m", "1000Mi"),
+			})
+			_, err = doReconcile(ctx, name)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(k8sClient.Get(ctx, nn(name), cpa)).To(Succeed())
+			Expect(meta.FindStatusCondition(cpa.Status.Conditions, "ScalingDecision").Reason).To(Equal("VPA"))
+
+			// Now set CPU upper bound to zero but memory above threshold (90%).
+			// Memory utilization alone should trigger the switch to HPA.
+			setVPARecommendation(ctx, name, []vpav1.RecommendedContainerResources{
+				vpaContainerRecommendationWithUpperBound("500m", "900Mi", "0", "1000Mi"),
+			})
+
 			_, err = doReconcile(ctx, name)
 			Expect(err).NotTo(HaveOccurred())
 
