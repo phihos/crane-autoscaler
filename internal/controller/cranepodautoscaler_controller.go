@@ -42,8 +42,6 @@ const (
 	refHPA = "HPA"
 	// typeAvailableCraneAutoscaler represents the status of the Deployment reconciliation
 	typeAvailableCraneAutoscaler = "Available"
-	// typeDegradedCraneAutoscaler represents the status used when the custom resource is deleted and the finalizer operations are yet to occur.
-	// typeDegradedCraneAutoscaler = "Degraded"
 	typeScalingDecisionCraneAutoscaler = "ScalingDecision"
 )
 
