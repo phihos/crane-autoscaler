@@ -41,7 +41,7 @@ const (
 	refVPA = "VPA"
 	refHPA = "HPA"
 	// typeAvailableCraneAutoscaler represents the status of the Deployment reconciliation
-	typeAvailableCraneAutoscaler = "Available"
+	typeAvailableCraneAutoscaler       = "Available"
 	typeScalingDecisionCraneAutoscaler = "ScalingDecision"
 )
 
