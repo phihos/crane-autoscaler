@@ -466,6 +466,30 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 			Expect(decision.Reason).To(Equal("VPA"))
 		})
 
+		It("does not panic when VPA has no recommendation and defaults to HPA", func() {
+			const name = "test-nil-recommendation"
+			defer cleanup(ctx, name)
+
+			cpa := newCranePodAutoscaler(name)
+			Expect(k8sClient.Create(ctx, cpa)).To(Succeed())
+
+			// First reconcile: creates HPA+VPA, defaults to HPA active.
+			_, err := doReconcile(ctx, name)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Set HPA at min replicas but leave VPA recommendation nil (no recommendation yet).
+			setHPAStatus(ctx, name, 2)
+
+			// Second reconcile: VPA has no recommendation. Must not panic and should stay on HPA.
+			_, err = doReconcile(ctx, name)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(k8sClient.Get(ctx, nn(name), cpa)).To(Succeed())
+			decision := meta.FindStatusCondition(cpa.Status.Conditions, "ScalingDecision")
+			Expect(decision).NotTo(BeNil())
+			Expect(decision.Reason).To(Equal("HPA"))
+		})
+
 		It("triggers HPA transition when memory exceeds threshold even if CPU is below", func() {
 			const name = "test-mem-threshold"
 			defer cleanup(ctx, name)
