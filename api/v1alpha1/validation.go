@@ -9,6 +9,9 @@ import (
 )
 
 func (r *CranePodAutoscaler) Validate() error {
+	if r.Spec.VPA.TargetRef == nil {
+		return fmt.Errorf("spec.VPA.targetRef must be set")
+	}
 	if !equalTargetRefs(r.Spec.VPA, r.Spec.HPA) {
 		return fmt.Errorf("spec.VPA.targetRef does not match spec.HPA.scaleTargetRef: %v", cmp.Diff(r.Spec.VPA.TargetRef, r.Spec.HPA.ScaleTargetRef))
 	}

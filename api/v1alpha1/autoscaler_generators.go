@@ -20,6 +20,9 @@ func (r *CranePodAutoscaler) GenerateEnabledVPA() *vpav1.VerticalPodAutoscaler {
 func (r *CranePodAutoscaler) GenerateDisabledVPA() *vpav1.VerticalPodAutoscaler {
 	vpaSpec := r.Spec.VPA.DeepCopy()
 	updateModeOff := vpav1.UpdateModeOff
+	if vpaSpec.UpdatePolicy == nil {
+		vpaSpec.UpdatePolicy = &vpav1.PodUpdatePolicy{}
+	}
 	vpaSpec.UpdatePolicy.UpdateMode = &updateModeOff
 	return &vpav1.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
