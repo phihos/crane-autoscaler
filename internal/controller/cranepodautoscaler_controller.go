@@ -307,12 +307,18 @@ func getBiggestContainerResourceUtilization(vpaContainerResources []vpav1.Recomm
 	utilization := float32(0.0)
 	containerName := "NOCONTAINER"
 	for _, containerResource := range vpaContainerResources {
-		targetCpu := containerResource.Target.Cpu().MilliValue()
+		var cpuUtilization float32
 		upperBoundCpu := containerResource.UpperBound.Cpu().MilliValue()
-		cpuUtilization := float32(targetCpu) / float32(upperBoundCpu)
-		targetMem := containerResource.Target.Memory().Value()
+		if upperBoundCpu > 0 {
+			targetCpu := containerResource.Target.Cpu().MilliValue()
+			cpuUtilization = float32(targetCpu) / float32(upperBoundCpu)
+		}
+		var memUtilization float32
 		upperBoundMem := containerResource.UpperBound.Memory().Value()
-		memUtilization := float32(targetMem) / float32(upperBoundMem)
+		if upperBoundMem > 0 {
+			targetMem := containerResource.Target.Memory().Value()
+			memUtilization = float32(targetMem) / float32(upperBoundMem)
+		}
 
 		if cpuUtilization > utilization {
 			utilization = cpuUtilization
