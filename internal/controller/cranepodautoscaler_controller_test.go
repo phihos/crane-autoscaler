@@ -61,7 +61,7 @@ func newCranePodAutoscaler(name string) *autoscalingv1alpha1.CranePodAutoscaler 
 					APIVersion: "apps/v1",
 				},
 				UpdatePolicy: &vpav1.PodUpdatePolicy{
-					UpdateMode: ptr.To[vpav1.UpdateMode](vpav1.UpdateModeAuto),
+					UpdateMode: ptr.To[vpav1.UpdateMode](vpav1.UpdateModeRecreate),
 				},
 			},
 			Behavior: autoscalingv1alpha1.CranePodAutoscalerBehavior{
@@ -262,10 +262,10 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 			Expect(decision).NotTo(BeNil())
 			Expect(decision.Reason).To(Equal("VPA"))
 
-			// VPA should be enabled (UpdateMode=Auto).
+			// VPA should be enabled (UpdateMode=Recreate).
 			vpa := &vpav1.VerticalPodAutoscaler{}
 			Expect(k8sClient.Get(ctx, nn(name), vpa)).To(Succeed())
-			Expect(*vpa.Spec.UpdatePolicy.UpdateMode).To(Equal(vpav1.UpdateModeAuto))
+			Expect(*vpa.Spec.UpdatePolicy.UpdateMode).To(Equal(vpav1.UpdateModeRecreate))
 
 			// HPA should be disabled (MaxReplicas=MinReplicas=2).
 			hpa := &hpav2.HorizontalPodAutoscaler{}
@@ -432,10 +432,10 @@ var _ = Describe("CranePodAutoscaler Controller", func() {
 			})
 
 			// VPA should be disabled (Off) since HPA is active.
-			// Manually tamper to Auto.
+			// Manually tamper to Recreate.
 			vpa := &vpav1.VerticalPodAutoscaler{}
 			Expect(k8sClient.Get(ctx, nn(name), vpa)).To(Succeed())
-			vpa.Spec.UpdatePolicy.UpdateMode = ptr.To[vpav1.UpdateMode](vpav1.UpdateModeAuto)
+			vpa.Spec.UpdatePolicy.UpdateMode = ptr.To[vpav1.UpdateMode](vpav1.UpdateModeRecreate)
 			Expect(k8sClient.Update(ctx, vpa)).To(Succeed())
 
 			// Reconcile should correct it back to Off.

@@ -108,7 +108,7 @@ var _ = Describe("CranePodAutoscaler Webhook", func() {
 							APIVersion: "apps/v1",
 						},
 						UpdatePolicy: &vpav1.PodUpdatePolicy{
-							UpdateMode: ptr.To[vpav1.UpdateMode](vpav1.UpdateModeAuto),
+							UpdateMode: ptr.To[vpav1.UpdateMode](vpav1.UpdateModeRecreate),
 						},
 					},
 				},
