@@ -65,7 +65,7 @@ type CranePodAutoscalerReconciler struct {
 // move the current state of the cluster closer to the desired state.
 //
 // For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.3/pkg/reconcile
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile
 func (r *CranePodAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
@@ -326,7 +326,7 @@ func getBiggestContainerResourceUtilization(vpaContainerResources []vpav1.Recomm
 
 func (r *CranePodAutoscalerReconciler) reconcileVPA(ctx context.Context, craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler, vpa *vpav1.VerticalPodAutoscaler, active bool) error {
 	logger := log.FromContext(ctx)
-	desiredVPA := &vpav1.VerticalPodAutoscaler{}
+	var desiredVPA *vpav1.VerticalPodAutoscaler
 	if active {
 		desiredVPA = craneAutoscaler.GenerateEnabledVPA()
 	} else {
@@ -351,7 +351,7 @@ func (r *CranePodAutoscalerReconciler) reconcileVPA(ctx context.Context, craneAu
 
 func (r *CranePodAutoscalerReconciler) reconcileHPA(ctx context.Context, craneAutoscaler *autoscalingv1alpha1.CranePodAutoscaler, hpa *hpav2.HorizontalPodAutoscaler, active bool) error {
 	logger := log.FromContext(ctx)
-	desiredHPA := &hpav2.HorizontalPodAutoscaler{}
+	var desiredHPA *hpav2.HorizontalPodAutoscaler
 	if active {
 		desiredHPA = craneAutoscaler.GenerateEnabledHPA()
 	} else {
