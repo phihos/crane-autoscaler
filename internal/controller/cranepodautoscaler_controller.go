@@ -141,6 +141,11 @@ func (r *CranePodAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.R
 		//               This should not happen.
 		activeAutoscaler = refHPA
 		passiveAutoscaler = refVPA
+	} else if vpa.Status.Recommendation == nil {
+		// Special case: VPA has no recommendation yet (e.g. just created).
+		//               We default to HPA as this is the safer option in terms of availability.
+		activeAutoscaler = refHPA
+		passiveAutoscaler = refVPA
 	} else {
 		// Usual case: VPA and HPA both already exist.
 		// 			   Now our action depends on the current scaling mode.
