@@ -28,7 +28,7 @@ jobs:
           determinate: true
 
       - name: Set up magic Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+        uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
 
       - name: Set up Go cache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -60,7 +60,7 @@ jobs:
           determinate: true
 
       - name: Set up magic Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+        uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
 
       - name: Set up Go cache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -95,7 +95,7 @@ jobs:
           determinate: true
 
       - name: Set up magic Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+        uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
 
       - name: Prepare Nix shell
         run: nix develop --impure .#ci
